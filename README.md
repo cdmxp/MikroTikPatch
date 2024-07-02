@@ -8,17 +8,18 @@
 ![](install.png)
 ![](routeros.png)
 
-### Uses keygen to generate license key.
-![](keygen.png)
+### license RouterOS for x86.
+![](x86.png)
+### license RouterOS for chr.
+![](chr.png)
 
-## How generate license key (***keygen.exe run on windows***)
-    keygen.zip in iso or img root directory,for chr image it's in /flash/rw/disk/ directory,same as winbox file manager directory
-    run unzip keygen.zip
-    run keygen.exe
-    input your software id
 ## How to use shell
     install option-{version}.npk package
     run telnet to routeros with username devel and password is same as admin
+## How to license RouterOS
+    telnet to routeros with username devel and password is same as admin
+    run keygen
+    chr mode could use renew lincense online
 ## How to use python3
     install python3-{version}.npk package
     run telnet to routeros with username devel and password is same as admin

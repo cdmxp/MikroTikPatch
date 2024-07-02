@@ -28,7 +28,11 @@ def patch_bzimage(data:bytes,key_dict:dict):
     new_vmlinux = vmlinux.replace(initramfs,new_initramfs)
     new_vmlinux_xz = lzma.compress(new_vmlinux,check=lzma.CHECK_CRC32,filters=[
             {"id": lzma.FILTER_X86},
-            {"id": lzma.FILTER_LZMA2, "preset": 8,'dict_size': 32*1024*1024},
+            {"id": lzma.FILTER_LZMA2, 
+             "preset": 9 | lzma.PRESET_EXTREME,
+             'dict_size': 32*1024*1024,
+              "lc": 4,"lp": 0, "pb": 0,
+             },
         ])
     new_payload_length = len(new_vmlinux_xz)
     assert new_payload_length <= payload_length , 'new vmlinux.xz size is too big'
@@ -45,7 +49,6 @@ def run_shell_command(command):
     process = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process.stdout, process.stderr
 
-
 def patch_squashfs(path,key_dict):
     for root, dirs, files in os.walk(path):
         for file in files:
@@ -57,6 +60,17 @@ def patch_squashfs(path,key_dict):
                         print(f'{file} public key patched {old_public_key[:16].hex().upper()}...')
                         data = data.replace(old_public_key,new_public_key)
                         open(file,'wb').write(data)
+                data = open(file,'rb').read()
+                url_dict = {
+                    os.environ['MIKRO_LICENCE_URL'].encode():os.environ['CUSTOM_LICENCE_URL'].encode(),
+                    os.environ['MIKRO_UPGRADE_URL'].encode():os.environ['CUSTOM_UPGRADE_URL'].encode()
+                }
+                for old_url,new_url in url_dict.items():
+                    if old_url in data:
+                        print(f'{file} url patched {old_url.decode()[:7]}...')
+                        data = data.replace(old_url,new_url)
+                        open(file,'wb').write(data)
+
 
 def patch_npk_file(key_dict,kcdsa_private_key,eddsa_private_key,input_file,output_file=None):
     npk = NovaPackage.load(input_file)    
@@ -72,6 +86,7 @@ def patch_npk_file(key_dict,kcdsa_private_key,eddsa_private_key,input_file,outpu
                 print(f'patch {item.name} ...')
                 item.data = patch_elf(item.data,key_dict)
                 open('linux','wb').write(item.data)
+       
         npk[NpkPartID.FILE_CONTAINER].data = file_container.serialize()
         try:
             squashfs_file = 'squashfs.sfs'
@@ -81,6 +96,9 @@ def patch_npk_file(key_dict,kcdsa_private_key,eddsa_private_key,input_file,outpu
             _, stderr = run_shell_command(f"unsquashfs -d {extract_dir} {squashfs_file}")
             print(stderr.decode())
             patch_squashfs(extract_dir,key_dict)
+            keygen = os.path.join(extract_dir,'bin/keygen')
+            run_shell_command(f"sudo cp keygen.bin {keygen}")
+            run_shell_command(f"sudo chmod a+x {keygen}")
             print(f"pack {extract_dir} ...")
             run_shell_command(f"rm -f {squashfs_file}")
             _, stderr = run_shell_command(f"mksquashfs {extract_dir} {squashfs_file} -quiet -comp xz -no-xattrs -b 256k")
@@ -91,6 +109,10 @@ def patch_npk_file(key_dict,kcdsa_private_key,eddsa_private_key,input_file,outpu
         run_shell_command(f"rm -rf {extract_dir}")
         npk[NpkPartID.SQUASHFS].data = open(squashfs_file,'rb').read()
         run_shell_command(f"rm -f {squashfs_file}")
+
+    build_time = os.environ['BUILD_TIME']
+    if build_time:
+        npk[NpkPartID.NAME_INFO].data._build_time = int(build_time)
     npk.sign(kcdsa_private_key,eddsa_private_key)
     npk.save(output_file or input_file)
 

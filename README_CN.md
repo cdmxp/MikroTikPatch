@@ -9,16 +9,19 @@
 ![](install.png)
 ![](routeros.png)
 
-### 使用ISO或IMG内的Keygen生成授权许可
-![](keygen.png)
+### x86模式授权许可
+![](x86.png)
+### chr模式授权许可
+![](chr.png)
 
-## 如何生成授权许可 (Keygen.exe在windows命令行下运行)
-    keygen.zip在iso或者img文件的根目录下；chr镜像文件/rw/disk/目录下，和winbox打开后files目录一致。
-    解压缩 keygen.zip
-    运行 keygen.exe 输入software_id
 ## 如何使用Shell
     安装 option-{version}.npk 包
     telnet到RouterOS,用户名devel,密码与admin的密码相同
+## 如何授权许可
+    进入shell
+    运行 keygen
+    参考上图。
+    Chr镜像支持在线授权许可
 ## 如何使用Python
     安装 python3-{version}.npk 包
     telnet到RouterOS,用户名devel,密码与admin的密码相同
