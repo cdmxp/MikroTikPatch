@@ -1,52 +1,111 @@
-[![Patch Mikrotik RouterOS 6.x](https://github.com/elseif/MikroTikPatch/actions/workflows/mikrotik_patch_6.yml/badge.svg)](https://github.com/elseif/MikroTikPatch/actions/workflows/mikrotik_patch_6.yml)
-[![Patch Mikrotik RouterOS 7.x](https://github.com/elseif/MikroTikPatch/actions/workflows/mikrotik_patch_7.yml/badge.svg)](https://github.com/elseif/MikroTikPatch/actions/workflows/mikrotik_patch_7.yml)
-# MikroTik RouterOS Patch  [[English](README_EN.md)]
+# MikroTik RouterOS Patch
+[![Patch Mikrotik RouterOS](https://github.com/elseif/MikroTikPatch/actions/workflows/main.yml/badge.svg)](https://github.com/elseif/MikroTikPatch/actions/workflows/main.yml)
+![Cloud Status](https://img.shields.io/endpoint?url=https://mikrotik.ltd/status/cloud)
 
-### [[Discord](https://discord.gg/keV6MWQFtX)] [[Telegram](https://t.me/mikrotikpatch)] [[Keygen(Telegram Bot)](https://t.me/ROS_Keygen_Bot)]
+[![License: WTFPL](https://img.shields.io/badge/License-WTFPL-brightgreen.svg)](./LICENSE)
+[![CoC:WTFCoC](https://img.shields.io/badge/CoC-WTFCoC-brightgreen.svg)](./CODE_OF_CONDUCT.md)
 
-### 国内镜像下载 密码: elseif
-[ [123pan](https://www.123pan.com/s/IpxgTd-BYjQh.html) ]
-[ [7.15.3](https://elseif.lanzouj.com/b00cre7g7a)]
-[ [7.15.3-arm64](https://elseif.lanzouj.com/b00cre7g8b) ] 
-[ [6.49.15](https://elseif.lanzouj.com/b00crdq4ji) ] 
-[ [6.49.13](https://elseif.lanzouj.com/b00crdq4kj) ]       
+**English** | [中文](./README_CN.md)
 
-支持:在线更新、在线授权、云备份、DDNS
+> ## ⚠️ Important Notice
+>
+> **This project and its tools are for testing purposes only. Use at your own risk. Please use the officially licensed version for production environments.**
 
-![](image/install.png)
-![](image/routeros.png)
+## 🏗️ Architecture Support
+### x86 / arm64 (This Project)
+- **Homepage:** https://mikrotik.ltd/ 
+- **Demo:** https://demo.mikrotik.ltd/
+- **License: Installing `option.npk` will automatically grant the highest-level license.**
+- **License Bot:** https://t.me/ROS_Keygen_Bot
+- **Docker：** `docker run -d --privileged --name chr ghcr.io/elseif/chr:latest`
 
-### x86模式授权许可
-![](image/x86.png)
-### x86模式在线授权(v6.x)
-![](image/renew_v6.png)
-### Chr模式在线授权
-![](image/renew.png)
-### Chr模式授权许可
-![](image/chr.png)
+### arm64, arm, mipsbe, mmips, ppc, smips, x86 
+- **Homepage:** https://routeros.ltd/
+- **License: Sponsorship required.** *CHR versions (x86/Arm64) support online direct licensing.*
+- **Features:** Supports online custom brand package creation.
+---
 
-![](image/arm.png)
-![](image/mips.png)
+## 🔧 Feature Guide
+> All features below require the `option.npk` package to be installed first.
+### 1. Enable Container Mode (No Physical Reboot Required)
+```bash
+# Step 1: Enable container mode
+/system/device-mode/update container=yes
+# Step 2: Force reboot (execute in a new terminal)
+/system/shell cmd="reboot -f"
+```
+### 2. Shell Access
+#### A. Via Terminal
+```bash
+/system/shell
+# or shorthand
+/sh
+```
+#### B. Via SSH / Telnet
+```bash
+# Username: devel
+# Password: Same as the admin password
+ssh devel@<router-ip>
+```
+### 3.  x86 Architecture: CHR ↔ x86 Mode Switch
 
-## 如何使用Shell
-    安装 option-{version}.npk 包
-    telnet到RouterOS,用户名devel,密码与admin的密码相同
-## 如何授权许可
-    进入shell
-    运行 keygen
-    参考上图。
-    Chr镜像支持在线授权许可
-## 如何使用Python
-    安装 python3-{version}.npk 包
-    telnet到RouterOS,用户名devel,密码与admin的密码相同
-    运行 python -V
-### npk.py
-    对npk文件进行解包，修改，创建，签名和验证
-### patch.py
-    替换公钥并签名
+```bash
+# Execute after entering shell
+keygen chr   # Switch to CHR mode
+keygen x86   # Switch to x86 mode
+```
+### 4. Boot Auto-Run Script
+
+1. Create or edit the `/rw/disk/rc.local` file.
+2. Write your script content, for example：
+
+```bash
+#!/bin/sh
+# This script will be executed *before* RouterOS *loader* start.
+# You can put your own initialization stuff in here
+echo "Hello, world!"
+```
+
+3. You will see the output during boot: `Starting rc.local...`
+4. After boot, check the output:
+
+```bash
+# Enter shell
+cat /ram/startup.catlog | grep 'Hello'
+```
+
+---
+
+## ☁️ Cloud Services
+
+| Feature | Command |
+|------|------|
+| Online Upgrade | `system/package/update/install` |
+| Dynamic DNS | `ip/cloud/set ddns-enabled=yes` |
+| Cloud Backup | `/system/backup/cloud/upload-file action=create-and-upload password=any` |
+| Internet Detection | `/interface/detect-internet/set detect-interface-list=all` |
+
+---
+
+## 📚 Resources
+
+- [MikroTik Official Documentation](https://manual.mikrotik.com/)
+- [Telegram Group](https://t.me/+99Mw06p3K7NlMmNl)
+- [GitHub Source Code](https://github.com/elseif/MikroTikPatch)
 
 
-## 所有的修补操作都自动运行在[Github Action](https://github.com/elseif/MikroTikPatch/blob/main/.github/workflows/)。
+---
+## 💖 Sponsors
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+[DartNode(aff)](https://dartnode.com?aff=SnazzyLobster067)  | [ZMTO(aff)](https://console.zmto.com/?affid=1588) | [Vultr(aff)](https://www.vultr.com/?ref=9807160-9J)
+
+
+
+
+
+
+
+
 
 
 
